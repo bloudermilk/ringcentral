@@ -31,9 +31,17 @@ module RingCentral
       
       username_with_extension = [username, extension].compact.join('*')
       
-      response = RestClient.post(URL, params.merge(RingCentral.credentials_hash(username_with_extension, password)))
+      params = params.merge(RingCentral.credentials_hash(username_with_extension, password))
       
-      status_code = String.new(response.body).to_i # RestClient::Response casting to int behaves strangely
+      # Establish scope (set in block below)
+      status_code = nil
+      
+      RestClient.post(URL, params) do |response, request, result|
+        # Log request
+        puts request.args
+        
+        status_code = String.new(response.body).to_i # RestClient::Response casting to int behaves strangely
+      end
       
       return STATUS_CODES[status_code]
     end
